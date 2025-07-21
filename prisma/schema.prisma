@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  @@map("users")
+
+  // ID numérico -> permite a previsibilidade dos valores, eh mais leve
+  // UUID -> previne alguem adivinhar um ID, gasta mais espaço
+  id String @id @default(uuid())
+  name String @db.VarChar(24)
+  surname String @db.VarChar(32)
+  email String @db.VarChar(96) @unique
+  password String
+
+  books Book[]
+}
+
+model Category {
+  @@map("categories")
+
+  id Int @id @default(autoincrement())
+  name String @db.VarChar(24) @unique
+
+  books Book[]
+}
+
+model Publisher {
+  @@map("publishers")
+
+  id String @id @default(uuid())
+  name String @db.VarChar(32)
+  address String @unique
+  cellphone String @db.VarChar(16) @unique
+
+  books Book[]
+}
+
+model Book {
+  @@map("books")
+
+  id String @id @default(uuid())
+  author_id String
+  category_id Int
+  publisher_id String
+  title String @db.VarChar(96)
+  summary String
+  year Int
+  pages Int
+  isbn String @db.VarChar(13) @unique
+
+  author User @relation(fields: [author_id], references: [id])
+  category Category @relation(fields: [category_id], references: [id])
+  publisher Publisher @relation(fields: [publisher_id], references: [id])
+}
